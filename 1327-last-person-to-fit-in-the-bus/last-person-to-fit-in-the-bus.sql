@@ -1,10 +1,22 @@
-SELECT
-    person_name
-FROM Queue q1
-WHERE 1000 >= (
-    SELECT SUM(weight)
-    FROM Queue q2
-    WHERE q1.turn >= q2.turn
+WITH Bus AS 
+(
+    SELECT 
+        turn,
+        person_name,
+        weight,
+        SUM(weight) OVER 
+        (
+            ORDER BY turn
+            ROWS BETWEEN UNBOUNDED PRECEDING
+            AND CURRENT ROW
+        ) AS cumulative_wt
+    FROM Queue
+    ORDER BY turn
 )
+SELECT person_name
+FROM Bus
+WHERE cumulative_wt <= 1000
 ORDER BY turn DESC
 LIMIT 1
+
+
